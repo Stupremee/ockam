@@ -4,7 +4,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 /// A lease for managing secrets
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Lease<T>
+pub struct OldLease<T>
 where
     T: DeserializeOwned + Serialize,
 {
@@ -24,7 +24,7 @@ where
 #[test]
 fn test_serialization() {
     let secret = [0xFFu8; 32];
-    let lease = Lease {
+    let lease = OldLease {
         id: [0x33; 16],
         issued: 1613519081,
         renewable: true,
@@ -35,7 +35,7 @@ fn test_serialization() {
     let res = serde_json::to_string(&lease);
     assert!(res.is_ok());
     let pickeled = res.unwrap();
-    let res = serde_json::from_str::<Lease<[u8; 32]>>(&pickeled);
+    let res = serde_json::from_str::<OldLease<[u8; 32]>>(&pickeled);
     assert!(res.is_ok());
     let lease2 = res.unwrap();
 
@@ -47,7 +47,7 @@ fn test_serialization() {
     let res = serde_bare::to_vec(&lease);
     assert!(res.is_ok());
     let bare = res.unwrap();
-    let res = serde_bare::from_slice::<Lease<[u8; 32]>>(&bare);
+    let res = serde_bare::from_slice::<OldLease<[u8; 32]>>(&bare);
     assert!(res.is_ok());
     let lease2 = res.unwrap();
 

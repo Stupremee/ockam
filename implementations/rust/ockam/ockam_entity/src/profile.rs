@@ -22,7 +22,7 @@ use crate::{
     CredentialAttribute, CredentialFragment1, CredentialFragment2, CredentialOffer,
     CredentialPresentation, CredentialProof, CredentialPublicKey, CredentialRequest,
     CredentialRequestFragment, CredentialSchema, Entity, EntityCredential, Handle, Holder,
-    Identity, IdentityRequest, IdentityResponse, Issuer, OfferId, PresentationManifest,
+    Identity, IdentityRequest, IdentityResponse, Issuer, Lease, OfferId, PresentationManifest,
     ProfileChangeEvent, ProfileIdentifier, ProofRequestId, SecureChannels, SigningPublicKey,
     TrustPolicy,
 };
@@ -155,6 +155,14 @@ impl Identity for Profile {
     ) -> Result<bool> {
         self.entity()
             .verify_and_update_contact(contact_id, change_events)
+    }
+
+    fn get_lease(&self, org_id: &str) -> Result<Lease> {
+        self.entity().get_lease(org_id)
+    }
+
+    fn revoke_lease(&mut self, lease: Lease) -> Result<()> {
+        self.entity().revoke_lease(lease)
     }
 }
 

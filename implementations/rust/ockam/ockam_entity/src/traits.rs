@@ -2,8 +2,8 @@ use crate::credential::{CredentialOffer, CredentialRequest, SigningPublicKey};
 use crate::{
     BbsCredential, Changes, Contact, Credential, CredentialAttribute, CredentialFragment1,
     CredentialFragment2, CredentialPresentation, CredentialProof, CredentialPublicKey,
-    CredentialRequestFragment, CredentialSchema, EntityCredential, OfferId, PresentationManifest,
-    ProfileChangeEvent, ProfileIdentifier, ProofRequestId, TrustPolicy,
+    CredentialRequestFragment, CredentialSchema, EntityCredential, Lease, OfferId,
+    PresentationManifest, ProfileChangeEvent, ProfileIdentifier, ProofRequestId, TrustPolicy,
 };
 use ockam_core::{Address, Result, Route};
 use ockam_vault_core::{PublicKey, Secret};
@@ -75,6 +75,10 @@ pub trait Identity: Send + 'static {
         contact_id: &ProfileIdentifier,
         change_events: C,
     ) -> Result<bool>;
+
+    fn get_lease(&self, org_id: &str) -> Result<Lease>;
+
+    fn revoke_lease(&mut self, lease: Lease) -> Result<()>;
 }
 
 pub trait SecureChannels {

@@ -1,8 +1,9 @@
 use crate::{
     CredentialHolder, CredentialIssuer, CredentialProof, CredentialPublicKey,
     CredentialRequestFragment, CredentialVerifier, EntityError::IdentityApiFailed, Handle,
-    Identity, IdentityRequest, IdentityRequest::*, IdentityResponse as Res, MaybeContact, Profile,
-    ProfileIdentifier, ProfileState, SecureChannelTrait, TrustPolicyImpl,
+    Identity, IdentityRequest, IdentityRequest::*, IdentityResponse as Res, LeaseProtocolRequest,
+    LeaseProtocolResponse, MaybeContact, Profile, ProfileIdentifier, ProfileState,
+    SecureChannelTrait, TrustPolicyImpl,
 };
 use async_trait::async_trait;
 use core::result::Result::Ok;
@@ -355,6 +356,32 @@ impl Worker for EntityWorker {
                     err()
                 }
             }
+            GetLease(profile_id, org_id) => {
+                let profile = self.profile(&profile_id);
+                if let Ok(lease) = profile.get_lease(org_id.as_str()) {
+                    ctx.send(reply, Res::Lease(lease)).await
+                } else {
+                    // Profile does not yet have a Lease. Try to request one
+                    if let Some(route) = profile.lease_manager_route() {
+                        ctx.send(
+                            route.clone(),
+                            LeaseProtocolRequest::create(100_000, org_id).as_json(),
+                        )
+                        .await?;
+                        let json = ctx.receive::<String>().await?;
+                        let lease_response = LeaseProtocolResponse::from_json(json.as_str());
+                        if lease_response.is_success() {
+                            let lease = lease_response.lease().expect("no lease in response");
+                            ctx.send(reply, Res::Lease(lease.clone())).await?;
+                        } else {
+                            panic!("Received error from Provisioner: {:#?}", lease_response)
+                        }
+                    }
+                    err()
+                }
+            }
+
+            RevokeLease(profile_id, lease) => self.profile(&profile_id).revoke_lease(lease),
         }
     }
 }

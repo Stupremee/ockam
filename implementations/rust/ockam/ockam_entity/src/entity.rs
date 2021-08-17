@@ -5,7 +5,7 @@ use crate::{
     CredentialPresentation, CredentialProof, CredentialProtocol, CredentialPublicKey,
     CredentialRequest, CredentialRequestFragment, CredentialSchema, EntityBuilder,
     EntityCredential, Handle, Holder, HolderWorker, Identity, IdentityRequest, IdentityResponse,
-    Issuer, ListenerWorker, MaybeContact, OfferId, PresentationFinishedMessage,
+    Issuer, Lease, ListenerWorker, MaybeContact, OfferId, PresentationFinishedMessage,
     PresentationManifest, PresenterWorker, ProfileChangeEvent, ProfileIdentifier, ProofRequestId,
     SecureChannels, SigningPublicKey, TrustPolicy, TrustPolicyImpl, VerifierWorker,
 };
@@ -232,6 +232,18 @@ impl Identity for Entity {
         } else {
             err()
         }
+    }
+
+    fn get_lease(&self, org_id: &str) -> Result<Lease> {
+        if let Res::Lease(lease) = self.call(GetLease(self.id(), org_id.to_string()))? {
+            Ok(lease)
+        } else {
+            err()
+        }
+    }
+
+    fn revoke_lease(&mut self, lease: Lease) -> Result<()> {
+        self.cast(RevokeLease(self.id(), lease))
     }
 }
 

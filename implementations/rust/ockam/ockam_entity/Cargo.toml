@@ -37,6 +37,7 @@ serde = { version = "1.0", default-features = false, features = ["derive"] }
 signature_core = { path = "../signature_core", version = "0.19.0-dev"                  }
 signature_bls = { path = "../signature_bls", version = "0.17.0-dev"                  }
 signature_bbs_plus = { path = "../signature_bbs_plus", version = "0.19.0-dev"                  }
+serde_json = "1.0"
 sha2 = "0.9"
 serde-big-array = "0.3"
 serde_bare = "0.4"
